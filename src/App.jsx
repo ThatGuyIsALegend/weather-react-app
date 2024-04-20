@@ -29,6 +29,7 @@ function App() {
   const API_key = 'fc8a9d1968339d8ce6d94ae1681f4648'
   const [weather, setWeather] = useState(undefined)
   const [date, setDate] = useState(undefined)
+  const [isError, setIsError] = useState(false);
 
   function titleCase(str) {
     if (!str) {
@@ -53,6 +54,7 @@ function App() {
 
   var cityName = ''
   const handleKeyDown = (e) => {
+    setIsError(false)
     if (e.key === 'Enter') {
       cityName = e.target.value
       fetchWeather()
@@ -64,10 +66,15 @@ function App() {
   }, [weather])
 
   const fetchWeather = async () => {
-
     fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${API_key}`)
       .then((response) => response.json())
       .then((_weather) => {
+        if (_weather.cod == '404') {
+          console.log('error fetching')
+          setIsError(true)
+          return
+        }
+
         setWeather(_weather)
         console.log(_weather)
         const d = new Date()
@@ -85,7 +92,9 @@ function App() {
         className='mb-4'
         placeholder='Enter a city...'
         startContent={<FontAwesomeIcon icon={faMagnifyingGlass}/>}
-        onKeyDown={handleKeyDown}/>
+        onKeyDown={handleKeyDown}
+        isInvalid={isError} 
+        errorMessage={isError ? 'Enter a valid city' : ''}/>
 
       <div className="grid xl:grid-cols-2 lg:grid-cols-1 gap-4">
         <Card className='flex p-auto'> {/* City name and time card */}
